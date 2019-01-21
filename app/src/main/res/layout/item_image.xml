@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+    <!--<com.gauravgoyal.flickrsearch.util.customview.RecycleImageView-->
+           <!---->
+            <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+            <!--android:id="@+id/img"-->
+            <!--android:scaleType="centerCrop"-->
+            <!--android:src="@drawable/empty_photo"-->
+
+            <!--android:layout_width="match_parent" android:layout_height="wrap_content"-->
+
+    <!--/>-->
+
+
+        <!--<?xml version="1.0" encoding="utf-8"?>-->
+        <!--<android.support.constraint.ConstraintLayout-->
+        <!--xmlns:app="http://schemas.android.com/apk/res-auto"-->
+        <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+        <!--xmlns:tools="http://schemas.android.com/tools"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--tools:context=".MainActivity">-->
+
+        <!--android:background="@drawable/border_image_holder"-->
+
+
+<com.gauravgoyal.flickrsearch.util.customview.RecycleImageView
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:id="@+id/img"
+android:scaleType="centerCrop"
+
+
+android:layout_width="match_parent" android:layout_height="wrap_content"
+app:layout_constraintDimensionRatio="H,1:1"
+/>
+
+        <!--</android.support.constraint.ConstraintLayout>-->

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <dimen name="thumbnail_spacing">1dp</dimen>
+    <dimen name="d32">32dp</dimen>
+    <dimen name="d16">16dp</dimen>
+
+    <dimen name="image_thumbnail_size">120dp</dimen>
+
+
+    <dimen name="f14">14sp</dimen>
+
+</resources>
