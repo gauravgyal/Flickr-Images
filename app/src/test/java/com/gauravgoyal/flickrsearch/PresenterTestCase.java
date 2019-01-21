@@ -50,14 +50,17 @@ public class PresenterTestCase {
     @Test
     public void fetchValidDataShouldLoadIntoView() {
         presenter.onLoadComplete(response);
+        Mockito.verify(view, Mockito.times(1)).setLoadingIndicator(false);
         Mockito.verify(view, Mockito.times(1)).showList(response);
     }
 
     @Test
     public void fetchValidDataShouldLoadIntoErrorView() {
         presenter.onError();
+        Mockito.verify(view, Mockito.times(1)).setLoadingIndicator(false);
         Mockito.verify(view, Mockito.times(1)).showErrorBox();
     }
+
 
     @Test
     public void testImageUrl() {
