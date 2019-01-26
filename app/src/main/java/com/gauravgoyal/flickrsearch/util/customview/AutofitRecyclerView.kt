@@ -1,13 +1,13 @@
 package com.gauravgoyal.flickrsearch.util.customview
 
 import android.content.Context
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.util.AttributeSet
 
 
-class AutofitRecyclerView : RecyclerView {
-    private var manager: GridLayoutManager? = null
+class AutofitRecyclerView : androidx.recyclerview.widget.RecyclerView {
+    private var manager: androidx.recyclerview.widget.GridLayoutManager? = null
     var columnWidth = -1 //default value
 
     constructor(context: Context) : super(context) {
@@ -30,7 +30,7 @@ class AutofitRecyclerView : RecyclerView {
             array.recycle()
         }
 
-        manager = GridLayoutManager(getContext(), 1)
+        manager = androidx.recyclerview.widget.GridLayoutManager(getContext(), 1)
         layoutManager = manager
     }
 

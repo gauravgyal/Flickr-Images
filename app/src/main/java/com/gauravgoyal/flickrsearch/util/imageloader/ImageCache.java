@@ -10,9 +10,10 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.util.LruCache;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.collection.LruCache;
 import android.util.Log;
 
 import java.io.*;
@@ -58,7 +59,7 @@ public class ImageCache {
         init(cacheParams);
     }
 
-    public static ImageCache getInstance(
+    static ImageCache getInstance(
             FragmentManager fragmentManager, ImageCacheParams cacheParams) {
         final RetainFragment mRetainFragment = findOrCreateRetainFragment(fragmentManager);
         ImageCache imageCache = (ImageCache) mRetainFragment.getObject();
@@ -78,13 +79,13 @@ public class ImageCache {
 
             mMemoryCache = new LruCache<String, BitmapDrawable>(mCacheParams.memCacheSize) {
                 @Override
-                protected void entryRemoved(boolean evicted, String key,
-                                            BitmapDrawable oldValue, BitmapDrawable newValue) {
-                    if (RecyclingBitmapDrawable.class.isInstance(oldValue)) {
+                protected void entryRemoved(boolean evicted, @NonNull String key,
+                                            @NonNull BitmapDrawable oldValue, BitmapDrawable newValue) {
+                    if (oldValue instanceof RecyclingBitmapDrawable) {
                         ((RecyclingBitmapDrawable) oldValue).setIsCached(false);
                     } else {
                         // The removed entry is a standard BitmapDrawable
-                        mReusableBitmaps.add(new SoftReference<Bitmap>(oldValue.getBitmap()));
+                        mReusableBitmaps.add(new SoftReference<>(oldValue.getBitmap()));
                     }
                 }
 
@@ -93,7 +94,7 @@ public class ImageCache {
                  * for a bitmap cache
                  */
                 @Override
-                protected int sizeOf(String key, BitmapDrawable value) {
+                protected int sizeOf(@NonNull String key, @NonNull BitmapDrawable value) {
                     final int bitmapSize = getBitmapSize(value) / 1024;
                     return bitmapSize == 0 ? 1 : bitmapSize;
                 }
@@ -106,7 +107,7 @@ public class ImageCache {
     }
 
 
-    public void initDiskCache() {
+    void initDiskCache() {
         // Set up disk cache
         synchronized (mDiskCacheLock) {
             if (mDiskLruCache == null || mDiskLruCache.isClosed()) {
@@ -136,14 +137,14 @@ public class ImageCache {
      * @param data Unique identifier for the bitmap to store
      * @param value The bitmap drawable to store
      */
-    public void addBitmapToCache(String data, BitmapDrawable value) {
+    void addBitmapToCache(String data, BitmapDrawable value) {
         if (data == null || value == null) {
             return;
         }
 
         // Add to memory cache
         if (mMemoryCache != null) {
-            if (RecyclingBitmapDrawable.class.isInstance(value)) {
+            if (value instanceof RecyclingBitmapDrawable) {
                 ((RecyclingBitmapDrawable) value).setIsCached(true);
             }
             mMemoryCache.put(data, value);
@@ -174,26 +175,22 @@ public class ImageCache {
                     Log.e(TAG, "addBitmapToCache - " + e);
                 } finally {
                     try {
-                        if (out != null) {
-                            out.close();
-                        }
-                    } catch (IOException e) {}
+                        if (out != null) out.close();
+                    } catch (IOException ignored) {}
                 }
             }
         }
     }
 
 
-    public BitmapDrawable getBitmapFromMemCache(String data) {
+    BitmapDrawable getBitmapFromMemCache(String data) {
         BitmapDrawable memValue = null;
-        if (mMemoryCache != null) {
-            memValue = mMemoryCache.get(data);
-        }
+        if (mMemoryCache != null) memValue = mMemoryCache.get(data);
         return memValue;
     }
 
 
-    public Bitmap getBitmapFromDiskCache(String data) {
+    Bitmap getBitmapFromDiskCache(String data) {
         final String key = hashKeyForDisk(data);
         Bitmap bitmap = null;
 
@@ -201,7 +198,7 @@ public class ImageCache {
             while (mDiskCacheStarting) {
                 try {
                     mDiskCacheLock.wait();
-                } catch (InterruptedException e) {}
+                } catch (InterruptedException ignored) {}
             }
             if (mDiskLruCache != null) {
                 InputStream inputStream = null;
@@ -222,7 +219,7 @@ public class ImageCache {
                         if (inputStream != null) {
                             inputStream.close();
                         }
-                    } catch (IOException e) {}
+                    } catch (IOException ignored) {}
                 }
             }
             return bitmap;
@@ -230,7 +227,7 @@ public class ImageCache {
     }
 
 
-    protected Bitmap getBitmapFromReusableSet(BitmapFactory.Options options) {
+    Bitmap getBitmapFromReusableSet(BitmapFactory.Options options) {
         Bitmap bitmap = null;
 
         if (mReusableBitmaps != null && !mReusableBitmaps.isEmpty()) {
@@ -265,7 +262,7 @@ public class ImageCache {
      * Clears both the memory and disk cache associated with this ImageCache object. Note that
      * this includes disk access so this should not be executed on the main/UI thread.
      */
-    public void clearCache() {
+    void clearCache() {
         if (mMemoryCache != null) {
             mMemoryCache.evictAll();
         }
@@ -288,7 +285,7 @@ public class ImageCache {
      * Flushes the disk cache associated with this ImageCache object. Note that this includes
      * disk access so this should not be executed on the main/UI thread.
      */
-    public void flush() {
+    void flush() {
         synchronized (mDiskCacheLock) {
             if (mDiskLruCache != null) {
                 try {
@@ -303,7 +300,7 @@ public class ImageCache {
     /**
      * Closes the disk cache associated with this ImageCache object.
      */
-    public void close() {
+    void close() {
         synchronized (mDiskCacheLock) {
             if (mDiskLruCache != null) {
                 try {
@@ -322,14 +319,14 @@ public class ImageCache {
      * A holder class that contains cache parameters.
      */
     public static class ImageCacheParams {
-        public int memCacheSize = DEFAULT_MEM_CACHE_SIZE;
-        public int diskCacheSize = DEFAULT_DISK_CACHE_SIZE;
-        public File diskCacheDir;
-        public CompressFormat compressFormat = DEFAULT_COMPRESS_FORMAT;
-        public int compressQuality = DEFAULT_COMPRESS_QUALITY;
-        public boolean memoryCacheEnabled = DEFAULT_MEM_CACHE_ENABLED;
-        public boolean diskCacheEnabled = DEFAULT_DISK_CACHE_ENABLED;
-        public boolean initDiskCacheOnCreate = DEFAULT_INIT_DISK_CACHE_ON_CREATE;
+        int memCacheSize = DEFAULT_MEM_CACHE_SIZE;
+        int diskCacheSize = DEFAULT_DISK_CACHE_SIZE;
+        File diskCacheDir;
+        CompressFormat compressFormat = DEFAULT_COMPRESS_FORMAT;
+        int compressQuality = DEFAULT_COMPRESS_QUALITY;
+        boolean memoryCacheEnabled = DEFAULT_MEM_CACHE_ENABLED;
+        boolean diskCacheEnabled = DEFAULT_DISK_CACHE_ENABLED;
+        boolean initDiskCacheOnCreate = DEFAULT_INIT_DISK_CACHE_ON_CREATE;
 
 
         public ImageCacheParams(Context context, String diskCacheDirectoryName) {
@@ -373,11 +370,11 @@ public class ImageCache {
     /**
      * Get a usable cache directory (external if available, internal otherwise).
      */
-    public static File getDiskCacheDir(Context context, String uniqueName) {
+    static File getDiskCacheDir(Context context, String uniqueName) {
         final String cachePath =
                 Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) ||
                         !isExternalStorageRemovable() ? getExternalCacheDir(context).getPath() :
-                                context.getCacheDir().getPath();
+                        context.getCacheDir().getPath();
 
         return new File(cachePath + File.separator + uniqueName);
     }
@@ -386,7 +383,7 @@ public class ImageCache {
      * A hashing method that changes a string (like a URL) into a hash suitable for using as a
      * disk filename.
      */
-    public static String hashKeyForDisk(String key) {
+    static String hashKeyForDisk(String key) {
         String cacheKey;
         try {
             final MessageDigest mDigest = MessageDigest.getInstance("MD5");
@@ -401,8 +398,8 @@ public class ImageCache {
     private static String bytesToHexString(byte[] bytes) {
         // http://stackoverflow.com/questions/332079
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < bytes.length; i++) {
-            String hex = Integer.toHexString(0xFF & bytes[i]);
+        for (byte aByte : bytes) {
+            String hex = Integer.toHexString(0xFF & aByte);
             if (hex.length() == 1) {
                 sb.append('0');
             }
@@ -411,23 +408,23 @@ public class ImageCache {
         return sb.toString();
     }
 
-    public static int getBitmapSize(BitmapDrawable value) {
+    private static int getBitmapSize(BitmapDrawable value) {
         Bitmap bitmap = value.getBitmap();
 
         return bitmap.getAllocationByteCount();
     }
 
-    public static boolean isExternalStorageRemovable() {
+    private static boolean isExternalStorageRemovable() {
         return Environment.isExternalStorageRemovable();
     }
 
 
-    public static File getExternalCacheDir(Context context) {
+    private static File getExternalCacheDir(Context context) {
         return context.getExternalCacheDir();
     }
 
 
-    public static long getUsableSpace(File path) {
+    static long getUsableSpace(File path) {
         return path.getUsableSpace();
     }
 
@@ -452,10 +449,10 @@ public class ImageCache {
             super.onCreate(savedInstanceState);
             setRetainInstance(true);
         }
-        public void setObject(Object object) {
+        void setObject(Object object) {
             mObject = object;
         }
-        public Object getObject() {
+        Object getObject() {
             return mObject;
         }
     }

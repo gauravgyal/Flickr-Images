@@ -11,3 +11,5 @@ const val API_URL = "https://api.flickr.com/services/rest/?method=flickr.photos.
 const val IMAGE_CACHE_DIR = "thumbs"
 
 const val DEFAULT_SEARCH_KEY = "uber"
+
+const val SEARCH_KEY = "searchkey"

@@ -1,10 +1,9 @@
 package com.gauravgoyal.flickrsearch.repo
 
-import android.os.AsyncTask
 import android.util.Log
-import com.gauravgoyal.flickrsearch.util.utility.API_URL
 import com.gauravgoyal.flickrsearch.model.PhotoModel
 import com.gauravgoyal.flickrsearch.model.PhotoServiceResponse
+import com.gauravgoyal.flickrsearch.util.utility.API_URL
 import com.gauravgoyal.flickrsearch.util.utility.Utility
 import org.json.JSONException
 import org.json.JSONObject
@@ -14,12 +13,8 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
-
-class PhotosRepo(private val key: String, private val page: Int, private val mListener: OnLoadListener) :
-    AsyncTask<Void, Void, PhotoServiceResponse>() {
-
-
-    override fun doInBackground(vararg params: Void): PhotoServiceResponse? {
+object PhotosRepo {
+    fun getPhotos(key: String, page: Int): PhotoServiceResponse? {
         var reader: BufferedReader? = null
 
         try {
@@ -47,10 +42,8 @@ class PhotosRepo(private val key: String, private val page: Int, private val mLi
             }
 
             reader = BufferedReader(InputStreamReader(inputStream))
-
-            val response = Utility.toString(reader)
-
-            return deserializeServiceResponse(response)
+            val response = deserializeServiceResponse(Utility.toString(reader))
+            return response
 
         } catch (e: IOException) {
             return null
@@ -66,21 +59,12 @@ class PhotosRepo(private val key: String, private val page: Int, private val mLi
         }
     }
 
-    override fun onPostExecute(photoServiceResponse: PhotoServiceResponse?) {
-        super.onPostExecute(photoServiceResponse)
-
-        if (photoServiceResponse != null) {
-            mListener.onLoadComplete(photoServiceResponse)
-        }
-    }
-
     private fun deserializeServiceResponse(response: String): PhotoServiceResponse? {
 
         var photoServiceResponse: PhotoServiceResponse? = null
 
         try {
             val responseJsonObj = JSONObject(response)
-
             val responseJson = JSONObject(responseJsonObj.getString("photos"))
             val currentPage = responseJson.getInt("page")
             val totalPages = responseJson.getInt("pages")
@@ -110,19 +94,9 @@ class PhotosRepo(private val key: String, private val page: Int, private val mLi
                 itemsPerPage = itemsPerPage
             )
         } catch (e: JSONException) {
-            e.printStackTrace()
-
-            mListener.onError()
+            Log.d("PhotoRepo", "Exception while parsing")
         }
 
         return photoServiceResponse
-    }
-
-    interface OnLoadListener {
-
-        fun onLoadComplete(response: PhotoServiceResponse)
-
-        fun onError()
-
     }
 }

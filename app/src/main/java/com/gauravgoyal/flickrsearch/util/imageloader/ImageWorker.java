@@ -9,14 +9,13 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
-import android.support.v4.app.FragmentManager;
+import androidx.fragment.app.FragmentManager;
 import android.widget.ImageView;
 
 import java.lang.ref.WeakReference;
 
 
 public abstract class ImageWorker {
-    private static final String TAG = "ImageWorker";
     private static final int FADE_IN_TIME = 200;
 
     private ImageCache mImageCache;
@@ -24,24 +23,28 @@ public abstract class ImageWorker {
     private Bitmap mLoadingBitmap;
     private boolean mFadeInBitmap = true;
     private boolean mExitTasksEarly = false;
-    protected boolean mPauseWork = false;
+    private boolean mPauseWork = false;
     private final Object mPauseWorkLock = new Object();
 
-    protected Resources mResources;
+    Resources mResources;
+    private Context mContext;
 
     private static final int MESSAGE_CLEAR = 0;
     private static final int MESSAGE_INIT_DISK_CACHE = 1;
     private static final int MESSAGE_FLUSH = 2;
     private static final int MESSAGE_CLOSE = 3;
 
-    protected ImageWorker(Context context) {
+    ImageWorker(Context context) {
+        mContext = context;
         mResources = context.getResources();
+
     }
 
     /**
      * Load an image specified by the data parameter into an ImageView
+     * for mow listener is null and is not being used.
      */
-    public void loadImage(Object data, ImageView imageView, OnImageLoadedListener listener) {
+    private void loadImage(Object data, ImageView imageView, OnImageLoadedListener listener) {
         if (data == null) {
             return;
         }
@@ -95,7 +98,7 @@ public abstract class ImageWorker {
     protected abstract Bitmap processBitmap(Object data);
 
 
-    protected ImageCache getImageCache() {
+    ImageCache getImageCache() {
         return mImageCache;
     }
 
@@ -107,7 +110,7 @@ public abstract class ImageWorker {
         }
     }
 
-    public static boolean cancelPotentialWork(Object data, ImageView imageView) {
+    private static boolean cancelPotentialWork(Object data, ImageView imageView) {
         final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
 
         if (bitmapWorkerTask != null) {
@@ -140,9 +143,9 @@ public abstract class ImageWorker {
         private final OnImageLoadedListener mOnImageLoadedListener;
 
 
-        public BitmapWorkerTask(Object data, ImageView imageView, OnImageLoadedListener listener) {
+        BitmapWorkerTask(Object data, ImageView imageView, OnImageLoadedListener listener) {
             mData = data;
-            imageViewReference = new WeakReference<ImageView>(imageView);
+            imageViewReference = new WeakReference<>(imageView);
             mOnImageLoadedListener = listener;
         }
 
@@ -158,7 +161,7 @@ public abstract class ImageWorker {
                 while (mPauseWork && !isCancelled()) {
                     try {
                         mPauseWorkLock.wait();
-                    } catch (InterruptedException e) {
+                    } catch (InterruptedException ignored) {
                     }
                 }
             }
@@ -232,13 +235,13 @@ public abstract class ImageWorker {
     private static class AsyncDrawable extends BitmapDrawable {
         private final WeakReference<BitmapWorkerTask> bitmapWorkerTaskReference;
 
-        public AsyncDrawable(Resources res, Bitmap bitmap, BitmapWorkerTask bitmapWorkerTask) {
+        AsyncDrawable(Resources res, Bitmap bitmap, BitmapWorkerTask bitmapWorkerTask) {
             super(res, bitmap);
             bitmapWorkerTaskReference =
-                    new WeakReference<BitmapWorkerTask>(bitmapWorkerTask);
+                    new WeakReference<>(bitmapWorkerTask);
         }
 
-        public BitmapWorkerTask getBitmapWorkerTask() {
+        BitmapWorkerTask getBitmapWorkerTask() {
             return bitmapWorkerTaskReference.get();
         }
     }

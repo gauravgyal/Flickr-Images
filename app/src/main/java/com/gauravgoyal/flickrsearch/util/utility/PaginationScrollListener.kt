@@ -1,11 +1,11 @@
 package com.gauravgoyal.flickrsearch.util.utility
 
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 
-abstract class PaginationScrollListener(layoutManager: GridLayoutManager) : RecyclerView.OnScrollListener() {
-    private val mLayoutManager: GridLayoutManager = layoutManager
+abstract class PaginationScrollListener(layoutManager: androidx.recyclerview.widget.GridLayoutManager) : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+    private val mLayoutManager: androidx.recyclerview.widget.GridLayoutManager = layoutManager
     private val startingPageIndex = 0
     private var visibleThreshold = 5
     private var currentPage = 0
@@ -19,16 +19,15 @@ abstract class PaginationScrollListener(layoutManager: GridLayoutManager) : Recy
     }
 
 
-    override fun onScrolled(view: RecyclerView, dx: Int, dy: Int) {
+    override fun onScrolled(view: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
         if (mLayoutManager.canScrollVertically() && dy >= 0) {
             handlePagination(view)
         }
     }
 
-    private fun handlePagination(view: RecyclerView) {
-        var lastVisibleItemPosition = 0
+    private fun handlePagination(view: androidx.recyclerview.widget.RecyclerView) {
         val totalItemCount = mLayoutManager.itemCount
-        lastVisibleItemPosition =
+        var lastVisibleItemPosition =
                 mLayoutManager.findLastVisibleItemPosition()
 
 
@@ -74,6 +73,6 @@ abstract class PaginationScrollListener(layoutManager: GridLayoutManager) : Recy
     }
 
     // Defines the process for actually loading more data based on page
-    abstract fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView)
+    abstract fun onLoadMore(page: Int, totalItemsCount: Int, view: androidx.recyclerview.widget.RecyclerView)
 
 }
