@@ -73,8 +73,9 @@ class ImageGridFragment : Fragment() {
         gridView.addOnScrollListener(paginationScrollListener)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu?) {
-        menu?.let {
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        menu.let {
             val searchViewMenuItem = menu.findItem(com.gauravgoyal.flickrsearch.R.id.search)
             val searchView = searchViewMenuItem.actionView as androidx.appcompat.widget.SearchView
 

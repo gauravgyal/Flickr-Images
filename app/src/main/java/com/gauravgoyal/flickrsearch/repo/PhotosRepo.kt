@@ -22,7 +22,7 @@ object PhotosRepo {
             val urlString = String.format(API_URL, key, page)
             val myUrl = URL(urlString)
 
-            Log.d("PhotosRepo", urlString)
+//            Log.d("PhotosRepo", urlString)
 
             val conn = myUrl
                 .openConnection() as HttpURLConnection
